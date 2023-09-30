@@ -7,6 +7,7 @@ const formEl = document.querySelector('#search-form');
 const galleryEl = document.querySelector('.gallery');
 let gallery;
 let newSearch;
+let hitsCounter = 0;
 
 formEl.addEventListener('submit', onFormSubmit);
 
@@ -15,12 +16,18 @@ function onFormSubmit(e) {
   newSearch = true;
   if (newSearch) {
     galleryEl.innerHTML = '';
+    hitsCounter = 0;
   }
   const searchQuery = e.target.elements.searchQuery.value;
+
+  if (searchQuery.length < 2) {
+    getErrorMessage('Please enter at least 2 characters');
+    return;
+  }
+
   fetchImagesData(searchQuery, newSearch)
     .then(renderImageCards)
     .catch(error => {
-      console.log(error);
       if (error.message === 'No images found') {
         getErrorMessage(error.message);
       } else {
@@ -30,19 +37,19 @@ function onFormSubmit(e) {
   newSearch = false;
 }
 
-function renderImageCards(imagesData) {
-  const cardsMarcup = imagesData
-    .map(
-      ({
-        webformatURL,
-        largeImageURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads,
-      }) =>
-        `<a class="gallery__link" href="${largeImageURL}">
+function renderImageCards({ totalHits, hits }) {
+  hitsCounter += hits.length;
+  const cardsMarcup = hits.map(
+    ({
+      webformatURL,
+      largeImageURL,
+      tags,
+      likes,
+      views,
+      comments,
+      downloads,
+    }) =>
+      `<a class="gallery__link" href="${largeImageURL}">
           <img class="gallery__image" src="${webformatURL}" alt="${tags}">
         </a>
         <div class="img_info_wrapper">
@@ -51,9 +58,9 @@ function renderImageCards(imagesData) {
           <p>Comments ${comments}</p>
           <p>Downloads ${downloads}</p>
         </div>`
-    )
-    .join('');
-  galleryEl.insertAdjacentHTML('beforeend', cardsMarcup);
+  );
+  galleryEl.insertAdjacentHTML('beforeend', cardsMarcup.join(''));
+  Notiflix.Notify.success(`Hooray! We found ${hitsCounter} images.`);
 
   if (gallery) {
     gallery.refresh();
@@ -65,9 +72,16 @@ function renderImageCards(imagesData) {
       captionDelay: 200,
     });
   }
+
+  if (hitsCounter >= totalHits) {
+    console.log(hitsCounter);
+    Notiflix.Notify.info(
+      "We're sorry, but you've reached the end of search results."
+    );
+  }
 }
 
-export function getErrorMessage(message) {
+function getErrorMessage(message) {
   Notiflix.Notify.failure(message, {
     position: 'center-center',
     timeout: 1000,
@@ -89,6 +103,9 @@ function onScroll() {
   }
 }
 
-//hitscounter fixed
-//hits end
+{
+  /* <div>
+  <ul class="gallery">CARDSLIST</ul>
+</div> */
+}
 //styles
