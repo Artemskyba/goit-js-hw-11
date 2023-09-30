@@ -8,8 +8,10 @@ const galleryEl = document.querySelector('.gallery');
 let gallery;
 let newSearch;
 let hitsCounter = 0;
+let isLoading = false;
 
 formEl.addEventListener('submit', onFormSubmit);
+window.addEventListener('scroll', onScroll);
 
 function onFormSubmit(e) {
   e.preventDefault();
@@ -39,17 +41,18 @@ function onFormSubmit(e) {
 
 function renderImageCards({ totalHits, hits }) {
   hitsCounter += hits.length;
-  const cardsMarcup = hits.map(
-    ({
-      webformatURL,
-      largeImageURL,
-      tags,
-      likes,
-      views,
-      comments,
-      downloads,
-    }) =>
-      `<a class="gallery__link" href="${largeImageURL}">
+  const cardsMarcup = hits
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) =>
+        `<a class="gallery__link" href="${largeImageURL}">
           <img class="gallery__image" src="${webformatURL}" alt="${tags}">
         </a>
         <div class="img_info_wrapper">
@@ -58,8 +61,9 @@ function renderImageCards({ totalHits, hits }) {
           <p>Comments ${comments}</p>
           <p>Downloads ${downloads}</p>
         </div>`
-  );
-  galleryEl.insertAdjacentHTML('beforeend', cardsMarcup.join(''));
+    )
+    .join('');
+  galleryEl.insertAdjacentHTML('beforeend', cardsMarcup);
   Notiflix.Notify.success(`Hooray! We found ${hitsCounter} images.`);
 
   if (gallery) {
@@ -92,20 +96,18 @@ function getErrorMessage(message) {
   });
 }
 
-window.addEventListener('scroll', onScroll);
-
 function onScroll() {
-  if (
-    window.innerHeight + window.scrollY >=
-    document.documentElement.scrollHeight
-  ) {
-    fetchImagesData(formEl.elements.searchQuery.value).then(renderImageCards);
+  if (isLoading) return;
+
+  const scrollY = window.scrollY;
+  const windowHeight = window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+
+  if (scrollY + windowHeight >= documentHeight - 200) {
+    isLoading = true;
+    fetchImagesData(formEl.elements.searchQuery.value).then(newData => {
+      renderImageCards(newData);
+      isLoading = false;
+    });
   }
 }
-
-{
-  /* <div>
-  <ul class="gallery">CARDSLIST</ul>
-</div> */
-}
-//styles
