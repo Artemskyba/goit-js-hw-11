@@ -52,14 +52,16 @@ function renderImageCards({ totalHits, hits }) {
         comments,
         downloads,
       }) =>
-        `<a class="gallery__link" href="${largeImageURL}">
-          <img class="gallery__image" src="${webformatURL}" alt="${tags}">
-        </a>
-        <div class="img_info_wrapper">
-          <p>Likes ${likes}</p>
-          <p>Vievs ${views}</p>
-          <p>Comments ${comments}</p>
-          <p>Downloads ${downloads}</p>
+        `<div class="photo-card-wrapper">
+          <a class="photo-card" href="${largeImageURL}">
+          <img class="gallery-image" src="${webformatURL}" alt="${tags}" loading="lazy"/>
+          </a>
+          <div class="info">
+            <p class="info-item"><b>Likes</b> ${likes}</p>
+            <p class="info-item"><b>Vievs</b> ${views}</p>
+            <p class="info-item"><b>Comments</b> ${comments}</p>
+            <p class="info-item"><b>Downloads</b> ${downloads}</p>
+          </div>
         </div>`
     )
     .join('');
@@ -69,8 +71,8 @@ function renderImageCards({ totalHits, hits }) {
   if (gallery) {
     gallery.refresh();
   } else {
-    gallery = new SimpleLightbox('.gallery .gallery__link', {
-      captionSelector: '.gallery__image',
+    gallery = new SimpleLightbox('.gallery .photo-card', {
+      captionSelector: '.gallery-image',
       captionType: 'attr',
       captionsData: 'alt',
       captionDelay: 200,
@@ -78,7 +80,6 @@ function renderImageCards({ totalHits, hits }) {
   }
 
   if (hitsCounter >= totalHits) {
-    console.log(hitsCounter);
     Notiflix.Notify.info(
       "We're sorry, but you've reached the end of search results."
     );
